@@ -36,13 +36,28 @@ export default function Index() {
 export async function getServerSideProps(ctx) {
   const token = ctx.req.cookies.token;
   if (token) {
-    return {
-      redirect: {
-        destination: "/home",
-        permanent: false,
+    const resVefify = await fetch("http://localhost:3001/user/verify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    };
+      body: JSON.stringify({ token }),
+    });
+    const verify = await resVefify.json();
+    if (!verify.error) {
+      return {
+        redirect: {
+          destination: "/home",
+          permanent: false,
+        },
+      };
+    } else {
+      return {
+        props: {},
+      };
+    }
   }
+
   return {
     props: {},
   };

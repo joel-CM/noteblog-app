@@ -1,54 +1,35 @@
-import { useEffect, useState } from "react";
-import router from "next/router";
-import Cookie from "universal-cookie";
-import { Card, Dropdown } from "react-bootstrap";
-import { FaUserAlt, FaBook } from "react-icons/fa";
-import { GrAddCircle } from "react-icons/gr";
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+import { Card } from "react-bootstrap";
+import { FaBook } from "react-icons/fa";
+import HomeLayout from "../../components/HomeLayout";
 
-export default function Home({ token, notes }) {
-  const cookie = new Cookie();
-  const [user, setUser] = useState({});
+export default function Home({ notes }) {
+  const router = useRouter();
 
   useEffect(() => {
-    setUser(cookie.get("user"));
+    if (router.query.error || router.query.msg) {
+      alert(router.query.error || router.query.msg);
+      router.replace("/home", undefined, { shallow: true });
+    }
   }, []);
 
-  const handleLogOut = () => {
-    cookie.remove("token");
-    cookie.remove("user");
-    router.push("/");
-  };
-
   return (
-    <div>
-      <div className="d-flex justify-content-end align-items-center">
-        <span className="mx-4 d-flex align-items-center">
-          <GrAddCircle
-            className="mx-4"
-            style={{ cursor: "pointer", fontSize: "20px" }}
-            onClick={() => router.push("/create")}
-          />
-          <FaUserAlt className="mx-2" />
-          {user?.name}
-        </span>
-        <Dropdown>
-          <Dropdown.Toggle variant="light"></Dropdown.Toggle>
-
-          <Dropdown.Menu>
-            <Dropdown.Item onClick={handleLogOut}>LogOut</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-      </div>
-      <h1 className="text-center pb-4 d-flex align-items-center justify-content-center">
+    <HomeLayout>
+      <h1 className="text-center py-4 d-flex align-items-center justify-content-center">
         <FaBook className="mx-2" />
         Your Notes
       </h1>
-      <div className="row gap-2 justify-content-center">
+      <div className="row justify-content-center">
         {notes.length > 0 &&
           notes.map((note) => (
-            <Card key={note._id} className="col-md-3">
+            <Card key={note._id} className="col-md-4">
               <Card.Body>
-                <Card.Title>{note.title}</Card.Title>
+                <Card.Title>
+                  {note.title.length > 50
+                    ? note.title.slice(0, 50) + "..."
+                    : note.title}
+                </Card.Title>
                 <Card.Text>
                   {note.description.length > 100
                     ? note.description.slice(0, 100) + "..."
@@ -56,6 +37,7 @@ export default function Home({ token, notes }) {
                   <span
                     className="text-primary mx-2"
                     style={{ cursor: "pointer" }}
+                    onClick={() => router.push(`/home/note/${note._id}`)}
                   >
                     detail
                   </span>
@@ -65,14 +47,33 @@ export default function Home({ token, notes }) {
           ))}
         {!notes.length && <h4 className="text-center">No notes yet</h4>}
       </div>
-    </div>
+    </HomeLayout>
   );
 }
 
+// -------- SSR
 export async function getServerSideProps(ctx) {
   const token = ctx.req.cookies.token;
 
   if (!token) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  const resVefify = await fetch("http://localhost:3001/user/verify", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ token }),
+  });
+  const verify = await resVefify.json();
+
+  if (verify.error) {
     return {
       redirect: {
         destination: "/",
@@ -87,9 +88,9 @@ export async function getServerSideProps(ctx) {
       token,
     },
   });
-  const data = await res.json();
+  const notes = await res.json();
 
   return {
-    props: { token, notes: data },
+    props: { notes },
   };
 }
