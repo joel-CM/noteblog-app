@@ -1,5 +1,5 @@
 const deleteNote = async (idNote, token) => {
-  const res = await fetch(`${process.env.api}/note/${idNote}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API}/note/${idNote}`, {
     method: "DELETE",
     headers: { token },
   });

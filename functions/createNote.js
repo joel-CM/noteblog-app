@@ -1,6 +1,6 @@
 const createNote = async (note, token) => {
   console.log("->" + token);
-  const res = await fetch(`${process.env.api}/note/create`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API}/note/create`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
