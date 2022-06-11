@@ -7,16 +7,11 @@ import { Button } from "react-bootstrap";
 export default function Index() {
   const cookie = new Cookie();
 
-  // useEffect(() => {
-  //   const token = cookie.get("token");
-  //   if (token) {
-  //     router.push("/home");
-  //   }
-  // }, []);
-
   return (
     <div className="container">
-      <h1 className="text-center py-4">Welcome to Note Blog</h1>
+      <h1 className="text-center py-4">
+        Welcome to Note Blog {process.env.name}
+      </h1>
       <div className="d-flex justify-content-center">
         <Link href="/signup">
           <Button className="mx-1">
@@ -36,13 +31,16 @@ export default function Index() {
 export async function getServerSideProps(ctx) {
   const token = ctx.req.cookies.token;
   if (token) {
-    const resVefify = await fetch("https://mynoteblog.herokuapp.com/user/verify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ token }),
-    });
+    const resVefify = await fetch(
+      "https://mynoteblog.herokuapp.com/user/verify",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token }),
+      }
+    );
     const verify = await resVefify.json();
     if (!verify.error) {
       return {
