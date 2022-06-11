@@ -140,7 +140,16 @@ export async function getServerSideProps(ctx) {
     const res = await fetch("http://localhost:3001/note/" + idNote, {
       headers: { token },
     });
-    infoNote = await res.json();
+    const data = await res.json();
+    if (data.error) {
+      return {
+        redirect: {
+          destination: "/home?msg=" + data.msg,
+          permanent: false,
+        },
+      };
+    }
+    infoNote = data;
   }
   return {
     props: { token, idNote, update, infoNote },
