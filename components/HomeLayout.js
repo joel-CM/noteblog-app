@@ -24,7 +24,7 @@ export default function HomeLayout(props) {
 
   const deleteNote = async () => {
     const idNote = router.query.note;
-    const res = await fetch("http://localhost:3001/note/" + idNote, {
+    const res = await fetch("https://mynoteblog.herokuapp.com/note/" + idNote, {
       method: "DELETE",
       headers: { token: cookie.get("token") },
     });

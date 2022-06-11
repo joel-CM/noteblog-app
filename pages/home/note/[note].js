@@ -36,7 +36,7 @@ export async function getServerSideProps(ctx) {
   }
 
   const idNote = ctx.query.note;
-  const res = await fetch(`http://localhost:3001/note/${idNote}`, {
+  const res = await fetch(`https://mynoteblog.herokuapp.com/note/${idNote}`, {
     headers: {
       token,
     },

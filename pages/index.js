@@ -36,7 +36,7 @@ export default function Index() {
 export async function getServerSideProps(ctx) {
   const token = ctx.req.cookies.token;
   if (token) {
-    const resVefify = await fetch("http://localhost:3001/user/verify", {
+    const resVefify = await fetch("https://mynoteblog.herokuapp.com/user/verify", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -14,7 +14,7 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch("http://localhost:3001/user/signup", {
+    const res = await fetch("https://mynoteblog.herokuapp.com/user/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -73,7 +73,7 @@ export default function Signup() {
 export async function getServerSideProps(ctx) {
   const token = ctx.req.cookies.token;
   if (token) {
-    const resVefify = await fetch("http://localhost:3001/user/verify", {
+    const resVefify = await fetch("https://mynoteblog.herokuapp.com/user/verify", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

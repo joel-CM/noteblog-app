@@ -27,7 +27,7 @@ export default function Create({ token, idNote, infoNote, update }) {
     try {
       const res = null;
       if (!update) {
-        res = await fetch("http://localhost:3001/note/create", {
+        res = await fetch("https://mynoteblog.herokuapp.com/note/create", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -36,7 +36,7 @@ export default function Create({ token, idNote, infoNote, update }) {
           body: JSON.stringify(note),
         });
       } else {
-        res = await fetch("http://localhost:3001/note/" + idNote, {
+        res = await fetch("https://mynoteblog.herokuapp.com/note/" + idNote, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -115,7 +115,7 @@ export async function getServerSideProps(ctx) {
     };
   }
 
-  const resVefify = await fetch("http://localhost:3001/user/verify", {
+  const resVefify = await fetch("https://mynoteblog.herokuapp.com/user/verify", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -137,7 +137,7 @@ export async function getServerSideProps(ctx) {
   let infoNote = null;
   if (update) {
     idNote = ctx.query.edit;
-    const res = await fetch("http://localhost:3001/note/" + idNote, {
+    const res = await fetch("https://mynoteblog.herokuapp.com/note/" + idNote, {
       headers: { token },
     });
     const data = await res.json();

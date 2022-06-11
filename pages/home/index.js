@@ -64,7 +64,7 @@ export async function getServerSideProps(ctx) {
     };
   }
 
-  const resVefify = await fetch("http://localhost:3001/user/verify", {
+  const resVefify = await fetch("https://mynoteblog.herokuapp.com/user/verify", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -82,7 +82,7 @@ export async function getServerSideProps(ctx) {
     };
   }
 
-  const res = await fetch("http://localhost:3001/note", {
+  const res = await fetch("https://mynoteblog.herokuapp.com/note", {
     method: "GET",
     headers: {
       token,
