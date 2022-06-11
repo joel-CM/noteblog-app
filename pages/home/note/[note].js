@@ -1,4 +1,6 @@
 import router from "next/router";
+import verifyToken from "../../../functions/verifyToken";
+import getNote from "../../../functions/getNote";
 import HomeLayout from "../../../components/HomeLayout";
 import { Card, Button } from "react-bootstrap";
 
@@ -35,13 +37,18 @@ export async function getServerSideProps(ctx) {
     };
   }
 
+  const verify = await verifyToken(token);
+  if (verify.error) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
   const idNote = ctx.query.note;
-  const res = await fetch(`https://mynoteblog.herokuapp.com/note/${idNote}`, {
-    headers: {
-      token,
-    },
-  });
-  const note = await res.json();
+  const note = await getNote(idNote, token);
 
   if (note.error) {
     return {
@@ -56,4 +63,3 @@ export async function getServerSideProps(ctx) {
     props: { note },
   };
 }
-// backtick ``

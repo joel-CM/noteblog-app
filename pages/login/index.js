@@ -1,5 +1,7 @@
 import { useState } from "react";
 import router from "next/router";
+import verifyToken from "../../functions/verifyToken";
+import login from "../../functions/login";
 import Cookie from "universal-cookie";
 import { Form, Button } from "react-bootstrap";
 
@@ -16,14 +18,7 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch("https://mynoteblog.herokuapp.com/user/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(state),
-    });
-    const data = await res.json();
+    const data = await login(state);
     if (data.error) return alert(data.msg);
     cookie.set("token", data.token, { path: "/" });
     cookie.set("user", data.user, { path: "/" });
@@ -76,29 +71,24 @@ export default function Login() {
 
 export async function getServerSideProps(ctx) {
   const token = ctx.req.cookies.token;
-  if (token) {
-    const resVefify = await fetch("https://mynoteblog.herokuapp.com/user/verify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ token }),
-    });
-    const verify = await resVefify.json();
-    if (!verify.error) {
-      return {
-        redirect: {
-          destination: "/home",
-          permanent: false,
-        },
-      };
-    } else {
-      return {
-        props: {},
-      };
-    }
+
+  if (!token) {
+    return {
+      props: {},
+    };
   }
+
+  const verify = await verifyToken(token);
+  if (verify.error) {
+    return {
+      props: {},
+    };
+  }
+
   return {
-    props: {},
+    redirect: {
+      destination: "/home",
+      permanent: false,
+    },
   };
 }

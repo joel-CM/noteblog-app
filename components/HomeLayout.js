@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Cookie from "universal-cookie";
+import rmNote from "../functions/deleteNote";
 import { Dropdown } from "react-bootstrap";
 import { GrAddCircle } from "react-icons/gr";
 import { FaUserAlt } from "react-icons/fa";
@@ -24,12 +25,9 @@ export default function HomeLayout(props) {
 
   const deleteNote = async () => {
     const idNote = router.query.note;
-    const res = await fetch("https://mynoteblog.herokuapp.com/note/" + idNote, {
-      method: "DELETE",
-      headers: { token: cookie.get("token") },
-    });
-    const data = await res.json();
-    router.push("/home?msg=" + data.msg);
+    const token = cookie.get("token");
+    const data = await rmNote(idNote, token);
+    router.push(`/home?msg=${data.msg}`);
   };
 
   return (
@@ -45,7 +43,7 @@ export default function HomeLayout(props) {
           {user?.name}
         </span>
         <Dropdown>
-          <Dropdown.Toggle variant="light" />
+          <Dropdown.Toggle variant="light" id="dropdown-basic" />
 
           <Dropdown.Menu>
             {path !== "/home" && (

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import router from "next/router";
+import verifyToken from "../../functions/verifyToken";
+import signup from "../../functions/signup";
 import { Form, Button } from "react-bootstrap";
 
 export default function Signup() {
@@ -14,14 +16,7 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch("https://mynoteblog.herokuapp.com/user/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(state),
-    });
-    const data = await res.json();
+    const data = await signup(state);
     if (data.error) return alert(data.msg);
     return alert(data.msg);
   };
@@ -72,29 +67,24 @@ export default function Signup() {
 
 export async function getServerSideProps(ctx) {
   const token = ctx.req.cookies.token;
-  if (token) {
-    const resVefify = await fetch("https://mynoteblog.herokuapp.com/user/verify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ token }),
-    });
-    const verify = await resVefify.json();
-    if (!verify.error) {
-      return {
-        redirect: {
-          destination: "/home",
-          permanent: false,
-        },
-      };
-    } else {
-      return {
-        props: {},
-      };
-    }
+
+  if (!token) {
+    return {
+      props: {},
+    };
   }
+
+  const verify = await verifyToken(token);
+  if (verify.error) {
+    return {
+      props: {},
+    };
+  }
+
   return {
-    props: {},
+    redirect: {
+      destination: "/home",
+      permanent: false,
+    },
   };
 }

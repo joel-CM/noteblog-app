@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { Card } from "react-bootstrap";
+import verifyToken from "../../functions/verifyToken";
+import getNotes from "../../functions/getNotes";
 import { FaBook } from "react-icons/fa";
 import HomeLayout from "../../components/HomeLayout";
+import Card from "../../components/Card";
 
 export default function Home({ notes }) {
   const router = useRouter();
@@ -22,29 +24,7 @@ export default function Home({ notes }) {
       </h1>
       <div className="row justify-content-center">
         {notes.length > 0 &&
-          notes.map((note) => (
-            <Card key={note._id} className="col-md-4">
-              <Card.Body>
-                <Card.Title>
-                  {note.title.length > 50
-                    ? note.title.slice(0, 50) + "..."
-                    : note.title}
-                </Card.Title>
-                <Card.Text>
-                  {note.description.length > 100
-                    ? note.description.slice(0, 100) + "..."
-                    : note.description}
-                  <span
-                    className="text-primary mx-2"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => router.push(`/home/note/${note._id}`)}
-                  >
-                    detail
-                  </span>
-                </Card.Text>
-              </Card.Body>
-            </Card>
-          ))}
+          notes.map((note) => <Card key={note._id} note={note} />)}
         {!notes.length && <h4 className="text-center">No notes yet</h4>}
       </div>
     </HomeLayout>
@@ -64,15 +44,7 @@ export async function getServerSideProps(ctx) {
     };
   }
 
-  const resVefify = await fetch("https://mynoteblog.herokuapp.com/user/verify", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ token }),
-  });
-  const verify = await resVefify.json();
-
+  const verify = await verifyToken(token);
   if (verify.error) {
     return {
       redirect: {
@@ -82,14 +54,7 @@ export async function getServerSideProps(ctx) {
     };
   }
 
-  const res = await fetch("https://mynoteblog.herokuapp.com/note", {
-    method: "GET",
-    headers: {
-      token,
-    },
-  });
-  const notes = await res.json();
-
+  const notes = await getNotes(token);
   return {
     props: { notes },
   };

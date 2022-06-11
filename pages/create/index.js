@@ -1,13 +1,17 @@
 import { useEffect } from "react";
 import router from "next/router";
+import verifyToken from "../../functions/verifyToken";
+import getNote from "../../functions/getNote.js";
+import createNote from "../../functions/createNote";
+import updateNote from "../../functions/updateNote";
 import { useState } from "react";
 import { Form, Button } from "react-bootstrap";
 
-export default function Create({ token, idNote, infoNote, update }) {
+export default function Create({ token, idNote, note: infoNote, updating }) {
   const [note, setNote] = useState({ title: "", description: "" });
 
   useEffect(() => {
-    if (update) {
+    if (updating) {
       setNote({
         title: infoNote.title,
         description: infoNote.description,
@@ -25,33 +29,17 @@ export default function Create({ token, idNote, infoNote, update }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = null;
-      if (!update) {
-        res = await fetch("https://mynoteblog.herokuapp.com/note/create", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            token,
-          },
-          body: JSON.stringify(note),
-        });
+      let res = null;
+
+      if (!updating) {
+        res = await createNote(note, token);
       } else {
-        res = await fetch("https://mynoteblog.herokuapp.com/note/" + idNote, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            token,
-          },
-          body: JSON.stringify(note),
-        });
+        res = await updateNote(idNote, note, token);
       }
-      const data = await res.json();
-      if (!data.error) {
-        setNote({ title: "", description: "" });
-        return router.push("/home?msg=" + data.msg);
-      } else {
-        return alert(data.msg);
-      }
+
+      if (res.error) return alert(res.msg);
+      setNote({ title: "", description: "" });
+      return router.push(`/home?msg=${res.msg}`);
     } catch (err) {
       console.log(err);
     }
@@ -62,7 +50,7 @@ export default function Create({ token, idNote, infoNote, update }) {
       <div className="col-md-4"></div>
       <div className="col-md-4">
         <h1 className="text-center my-4">
-          {update ? "Update Note" : "Create Note"}
+          {updating ? "Update Note" : "Create Note"}
         </h1>
         <Form className="w-100" onSubmit={handleSubmit}>
           <Form.Group className="mb-3">
@@ -87,7 +75,7 @@ export default function Create({ token, idNote, infoNote, update }) {
             />
           </Form.Group>
           <Button type="submit" variant="primary" className="w-100">
-            {update ? "Update" : "Create"}
+            {updating ? "Update" : "Create"}
           </Button>
           <Button
             variant="light"
@@ -106,6 +94,7 @@ export default function Create({ token, idNote, infoNote, update }) {
 // ---------- SSR
 export async function getServerSideProps(ctx) {
   const token = ctx.req.cookies.token;
+
   if (!token) {
     return {
       redirect: {
@@ -115,14 +104,7 @@ export async function getServerSideProps(ctx) {
     };
   }
 
-  const resVefify = await fetch("https://mynoteblog.herokuapp.com/user/verify", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ token }),
-  });
-  const verify = await resVefify.json();
+  const verify = await verifyToken(token);
   if (verify.error) {
     return {
       redirect: {
@@ -132,26 +114,26 @@ export async function getServerSideProps(ctx) {
     };
   }
 
-  const update = ctx.query.edit ? true : false;
-  let idNote = null;
-  let infoNote = null;
-  if (update) {
-    idNote = ctx.query.edit;
-    const res = await fetch("https://mynoteblog.herokuapp.com/note/" + idNote, {
-      headers: { token },
-    });
-    const data = await res.json();
-    if (data.error) {
-      return {
-        redirect: {
-          destination: "/home?msg=" + data.msg,
-          permanent: false,
-        },
-      };
-    }
-    infoNote = data;
+  const updating = ctx.query.edit ? true : false;
+  if (!updating) {
+    console.log("creando una nueva nota");
+    return {
+      props: { token, updating },
+    };
   }
+
+  const idNote = ctx.query.edit;
+  const note = await getNote(idNote, token);
+  if (!note) {
+    return {
+      redirect: {
+        destination: `/home?msg=${note.msg}`,
+        permanent: false,
+      },
+    };
+  }
+
   return {
-    props: { token, idNote, update, infoNote },
+    props: { token, idNote, updating, note },
   };
 }
