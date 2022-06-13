@@ -17,7 +17,6 @@ export default function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = await signup(state);
-    if (data.error) return alert(data.msg);
     return alert(data.msg);
   };
 
