@@ -6,6 +6,7 @@ import { Form, Button } from "react-bootstrap";
 
 export default function Signup() {
   const [state, setState] = useState({ user: "", password: "" });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setState({
@@ -16,7 +17,9 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const data = await signup(state);
+    setLoading(false);
     return alert(data.msg);
   };
 
@@ -48,7 +51,7 @@ export default function Signup() {
           </Form.Group>
 
           <Button variant="primary" type="submit" className="w-100">
-            SignUp
+            {loading ? "loading..." : "SignUp"}
           </Button>
           <Button
             variant="light"

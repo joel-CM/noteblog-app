@@ -9,6 +9,7 @@ import { Form, Button } from "react-bootstrap";
 
 export default function Create({ token, idNote, note: infoNote, updating }) {
   const [note, setNote] = useState({ title: "", description: "" });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (updating) {
@@ -30,6 +31,7 @@ export default function Create({ token, idNote, note: infoNote, updating }) {
     e.preventDefault();
     try {
       let res = null;
+      setLoading(true);
 
       if (!updating) {
         res = await createNote(note, token);
@@ -37,6 +39,7 @@ export default function Create({ token, idNote, note: infoNote, updating }) {
         res = await updateNote(idNote, note, token);
       }
 
+      setLoading(false);
       if (res.error) return alert(res.msg);
       setNote({ title: "", description: "" });
       return router.push(`/home?msg=${res.msg}`);
@@ -75,7 +78,9 @@ export default function Create({ token, idNote, note: infoNote, updating }) {
             />
           </Form.Group>
           <Button type="submit" variant="primary" className="w-100">
-            {updating ? "Update" : "Create"}
+            {updating && !loading && "Update"}
+            {!updating && !loading && "create"}
+            {loading && "loading..."}
           </Button>
           <Button
             variant="light"

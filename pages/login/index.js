@@ -8,6 +8,7 @@ import { Form, Button } from "react-bootstrap";
 export default function Login() {
   const cookie = new Cookie();
   const [state, setState] = useState({ user: "", password: "" });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setState({
@@ -18,7 +19,9 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const data = await login(state);
+    setLoading(false);
     if (data.error) return alert(data.msg);
     cookie.set("token", data.token, { path: "/" });
     cookie.set("user", data.user, { path: "/" });
@@ -53,7 +56,7 @@ export default function Login() {
           </Form.Group>
 
           <Button variant="primary" type="submit" className="w-100">
-            LogIn
+            {loading ? "loading..." : "LogIn"}
           </Button>
           <Button
             variant="light"
